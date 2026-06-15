@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COEX 추천도서 - 올해 꼭 읽어야 할 7권</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .full-screen-section {
+            min-height: 50vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 0;
+        }
+
+
+        .book-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            position: relative;
+            width: 100%;
+        }
+
+        .book-card.featured {
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .book-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #d1d5db;
+        }
+
+        .book-cover {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #f3f4f6;
+        }
+
+        .book-card:hover .book-cover {
+            transform: scale(1.03);
+        }
+
+        .book-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            color: #9ca3af;
+        }
+
+        .category-tag {
+            display: inline-block;
+            background: #6b7280;
+            color: #ffffff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            white-space: nowrap;
+        }
+
+        .modal-overlay {
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-primary {
+            background: #3b3b3b;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #1f1f1f;
+        }
+
+        .book-icon {
+            width: 48px;
+            height: 48px;
+            opacity: 0.4;
+            margin-bottom: 8px;
+        }
+
+        .highlight-purple {
+            color: #a855f7;
+            font-weight: 800;
+            text-shadow: 0 0 15px rgba(168, 85, 247, 0.6), 0 0 30px rgba(168, 85, 247, 0.3);
+        }
+
+        .speech-bubble {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            border: 3px solid #d1d5db;
+            border-radius: 28px;
+            padding: 48px 48px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #374151;
+            position: relative;
+            margin-top: 0px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .speech-bubble.connected {
+            background: #faf5ff;
+            border-color: #a855f7;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.2), 0 8px 20px rgba(168, 85, 247, 0.15);
+            transform: scale(1.02);
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 16px solid transparent;
+            border-right: 16px solid transparent;
+            border-top: 16px solid #f3f4f6;
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -13px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 13px solid transparent;
+            border-right: 13px solid transparent;
+            border-top: 13px solid #d1d5db;
+            z-index: 1;
+        }
+
+        .content-section {
+            border-left: 1px solid #d1d5db;
+            border-right: 1px solid #d1d5db;
+        }
+
+        /* 텍스트 크기 (2.5배의 2/3) */
+        h1 { font-size: 50px !important; line-height: 1.6 !important; }
+        h2 { font-size: 42px !important; line-height: 1.6 !important; }
+        h3 { font-size: 33px !important; line-height: 1.6 !important; }
+        p { font-size: 27px !important; line-height: 1.8 !important; }
+        button { font-size: 23px !important; line-height: 1.6 !important; }
+
+        .text-3xl { font-size: 50px !important; line-height: 1.6 !important; }
+        .text-xl { font-size: 33px !important; line-height: 1.8 !important; }
+        .text-lg { font-size: 30px !important; line-height: 1.8 !important; }
+        .text-base { font-size: 27px !important; line-height: 1.8 !important; }
+        .text-sm { font-size: 23px !important; line-height: 1.6 !important; }
+        .text-xs { font-size: 20px !important; line-height: 1.6 !important; }
+        .text-4xl { font-size: 60px !important; line-height: 1.6 !important; }
+        .text-5xl { font-size: 75px !important; line-height: 1.6 !important; }
+        .text-6xl { font-size: 100px !important; line-height: 1.6 !important; }
+        .text-2xl { font-size: 42px !important; line-height: 1.6 !important; }
+        table { font-size: 16px !important; }
+        th, td { font-size: 16px !important; padding: 12px !important; }
+
+        /* 여백 조정 */
+        section { padding: 40px 8% !important; }
+        button { padding: 12px 24px !important; }
+
+        /* 섹션 간격 */
+        .max-w-7xl { max-width: 100% !important; }
+        .max-w-6xl { max-width: 100% !important; }
+        .max-w-5xl { max-width: 100% !important; }
+        .full-screen-section { min-height: auto !important; }
+
+        /* 텍스트 섹션 간 여백 */
+        section { margin-bottom: 30px !important; }
+
+        /* 도서 카드 크기 제한 */
+        #bookGrid1 { width: 100% !important; margin: 0 auto !important; display: flex !important; justify-content: center !important; flex-wrap: wrap !important; gap: 50px 60px !important; }
+        #bookGrid2 { width: 100% !important; margin: 0 auto !important; display: flex !important; justify-content: center !important; flex-wrap: wrap !important; gap: 50px 60px !important; }
+        #bookGrid3 { width: 100% !important; margin: 0 auto !important; display: flex !important; justify-content: center !important; flex-wrap: wrap !important; gap: 50px 60px !important; }
+        .book-card { width: 100% !important; }
+
+        /* 책 표지 크기 제한 */
+        .book-cover { max-width: 300px !important; }
+
+        /* 표 크기 제한 */
+        table { max-width: 900px !important; margin: 0 auto !important; }
+        th { font-size: 14px !important; padding: 8px !important; line-height: 1.6 !important; }
+        th.text-sm { font-size: 14px !important; }
+        thead th.text-sm { font-size: 14px !important; }
+        td { font-size: 14px !important; padding: 8px !important; line-height: 1.6 !important; }
+        thead tr { background: #e5e7eb !important; }
+        thead th { font-weight: 600 !important; }
+
+        /* 출처 텍스트 크기 */
+        .text-xs { font-size: 14px !important; }
+
+        /* (59세 이하 대상) 텍스트 1/2 사이즈 */
+        .text-half { font-size: 13.5px !important; }
+
+        /* 섹션 제목 및 설명 텍스트 스타일 */
+        #bookGrid1 h3,
+        #bookGrid2 h3,
+        #bookGrid3 h3 {
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            color: #1f2937 !important;
+            margin-top: 16px !important;
+        }
+
+        #bookGrid1 p,
+        #bookGrid2 p,
+        #bookGrid3 p {
+            font-size: 12px !important;
+            color: #6b7280 !important;
+            margin-top: 6px !important;
+        }
+
+        /* 섹션 최대 너비 제한 */
+        #bookGrid1 { max-width: 1400px !important; }
+        #bookGrid2 { max-width: 1000px !important; }
+        #bookGrid3 { max-width: 1000px !important; }
+
+        /* 도서 섹션 세로 구분선 */
+        .vertical-divider-container {
+            border-left: 1px solid #d1d1d1;
+            border-right: 1px solid #d1d1d1;
+            padding-left: 40px;
+            padding-right: 40px;
+            min-height: 100vh;
+        }
+
+        /* 모바일 반응형: 세로 선 제거 */
+        @media (max-width: 768px) {
+            .vertical-divider-container {
+                border-left: none;
+                border-right: none;
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 상단 로고 헤더 -->
+    <nav class="bg-white/80 backdrop-blur border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-center">
+            <img src="coex logo.png" alt="COEX" class="h-10">
+        </div>
+    </nav>
+
+    <!-- 섹션 1: 전자도서관 메인 메시지 -->
+    <section class="full-screen-section bg-white/50 content-section">
+        <div class="w-full px-6 md:px-12 text-center mx-auto pt-24">
+            <div class="space-y-24">
+                <div>
+                    <p class="text-xl font-bold text-gray-900" style="line-height: 1.8;">
+                        코엑스 전자도서관을 잊고 계셨나요?
+                    </p>
+                    <p class="text-xl font-bold text-gray-900 mt-12" style="line-height: 1.8;">
+                        올해 한 권도 못 읽었다면, 이 페이지를 잘 여셨습니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 점 분리선 -->
+    <section class="flex items-center justify-center py-6 bg-white/30">
+        <div class="text-gray-400 text-4xl tracking-widest">···</div>
+    </section>
+
+    <!-- 섹션 2: 독서 통계 -->
+    <section class="full-screen-section bg-purple-100 mt-12 content-section">
+        <div class="w-full px-6 md:px-12 max-w-5xl">
+            <div class="text-center space-y-8">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-3">2025년 독서 통계</h2>
+                    <p class="text-half text-gray-600">(59세 이하 대상)</p>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="border border-gray-300 px-4 py-3 text-left text-sm font-bold text-gray-900">특성별 구분</th>
+                                <th class="border border-gray-300 px-4 py-3 text-center text-sm font-bold text-gray-900">인구 1인당<br>평균 독서권수<br>(권)</th>
+                                <th class="border border-gray-300 px-4 py-3 text-center text-sm font-bold text-gray-900">독서율<br>(%)</th>
+                                <th class="border border-gray-300 px-4 py-3 text-center text-sm font-bold text-gray-900">독서인구 1인당<br>평균 독서권수<br>(권)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-blue-100">
+                                <td class="border border-gray-300 px-4 py-3 font-bold text-gray-900">전국 전체 평균</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">7</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">48.7</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">14.3</td>
+                            </tr>
+                            <tr class="bg-white">
+                                <td class="border border-gray-300 px-4 py-3 text-gray-900">남자</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">7.2</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">45.8</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">15.7</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-3 text-gray-900">여자</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">6.8</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">51.6</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">13.1</td>
+                            </tr>
+                            <tr class="bg-white">
+                                <td class="border border-gray-300 px-4 py-3 text-gray-900">13 ~ 19세</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">11.7</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">69.8</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">16.8</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-3 text-gray-900">20 ~ 29세</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">9.4</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">60.9</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">15.5</td>
+                            </tr>
+                            <tr class="bg-white">
+                                <td class="border border-gray-300 px-4 py-3 text-gray-900">30 ~ 39세</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">8.1</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">55</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">14.8</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-3 text-gray-900">40 ~ 49세</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">10.4</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">58.7</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">17.7</td>
+                            </tr>
+                            <tr class="bg-white">
+                                <td class="border border-gray-300 px-4 py-3 text-gray-900">50 ~ 59세</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">6.2</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">49.3</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-800">12.5</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-gray-500"><strong>출처:</strong> KOSIS 국가통계포털</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 섹션 3: 메인 메시지 -->
+    <section class="full-screen-section bg-white/50 content-section">
+        <div class="w-full px-6 md:px-12 text-center">
+            <div class="space-y-6">
+                <h1 class="text-3xl font-bold text-gray-900 leading-tight">
+                    대한민국 성인 연평균 독서량 7권
+                </h1>
+            </div>
+        </div>
+    </section>
+
+    <!-- 섹션 3-2: 추천 이유 -->
+    <section class="full-screen-section bg-white/50 content-section">
+        <div class="w-full px-6 md:px-12 text-center mx-auto pt-16">
+            <div>
+                <p class="text-xl font-semibold text-gray-800 text-center mb-16" style="line-height: 1.8;">
+                    우리에게 남은 6개월,<br>평균을 넘어 성장을 시작할 때
+                </p>
+                <p class="text-xl font-semibold text-gray-800 text-center mt-20" style="line-height: 1.8;">
+                    <span style="color: #a855f7;">코엑스 대표이사</span>가 직접 고른 10권의 추천도서를 소개합니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 통합 도서 섹션: 4개 그룹 (10권) -->
+    <section class="w-full bg-purple-100 py-16 md:py-20 content-section">
+        <div class="w-full px-6 md:px-12 max-w-7xl mx-auto vertical-divider-container">
+            <div id="bookContainer" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 50px 60px;"></div>
+        </div>
+    </section>
+
+    <!-- 점 분리선 -->
+    <section class="flex items-center justify-center py-6 bg-white/30">
+        <div class="text-gray-400 text-4xl tracking-widest">···</div>
+    </section>
+
+    <!-- 섹션 4: 전자도서관 안내 -->
+    <section class="full-screen-section bg-white/50 content-section">
+        <div class="w-full px-6 md:px-12 text-center mx-auto space-y-6">
+            <p class="text-xl font-bold text-gray-900">
+                이 모든 책은 코엑스 전자도서관을 통해 무료로 보실 수 있습니다.
+            </p>
+            <div class="space-y-4">
+                <a href="https://library.coex.co.kr" target="_blank" class="inline-block bg-gray-900 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors font-semibold text-xl">
+                    전자도서관 바로가기
+                </a>
+                <a href="https://library.coex.co.kr/guide" target="_blank" class="inline-block bg-gray-900 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors font-semibold text-xl block">
+                    사용방법 확인하기
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer class="w-full bg-white/50 py-16 content-section">
+        <div class="w-full px-6 md:px-12 text-center mx-auto">
+            <p style="font-size: 12px; color: #888888; text-align: center; margin-top: 50px;">
+                문의 : 인재개발팀 (1364)
+            </p>
+        </div>
+    </footer>
+
+    <!-- 책 상세 모달 -->
+    <div id="modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-overlay fixed inset-0 bg-black bg-opacity-40" onclick="closeModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content relative bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-gray-200">
+                <button onclick="closeModal()" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 z-10 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <div class="p-8 space-y-6">
+                    <div class="flex gap-6">
+                        <img id="modalCover" src="" alt="책 표지" class="w-32 h-48 object-cover rounded shadow-md flex-shrink-0 border border-gray-300">
+                        <div class="flex-1">
+                            <h2 id="modalTitle" class="text-3xl font-bold text-gray-900 mb-2"></h2>
+                            <p id="modalSubtitle" class="text-lg text-gray-700 font-semibold mb-4"></p>
+                            <p id="modalAuthor" class="text-gray-600 mb-4"></p>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">도서 소개</h3>
+                        <p id="modalDescription" class="text-gray-700 leading-relaxed whitespace-pre-line"></p>
+                    </div>
+                    <div class="border-t border-gray-200 pt-6">
+                        <a href="https://library.coex.co.kr" target="_blank" class="inline-block w-full bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-semibold text-center">
+                            전자도서관에서 읽기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 📚 책 데이터 (이곳에서 텍스트를 수정하세요!)
+        // ============================================================
+        const books = [
+            // Group 1: 시대를 읽는 비즈니스 인사이트 (3권)
+            {
+                id: 2,
+                title: "HBR 위대한 통찰",
+                subtitle: "",
+                author: "하버드비즈니스리뷰",
+                coverImage: "https://via.placeholder.com/200x300/06B6D4/FFFFFF?text=Book2",
+                group: "group1",
+                categoryTag: "경제경영",
+                description: ""
+            },
+            {
+                id: 5,
+                title: "세계 경제 지각 변동",
+                subtitle: "",
+                author: "박종훈",
+                coverImage: "https://via.placeholder.com/200x300/F59E0B/FFFFFF?text=Book5",
+                group: "group1",
+                categoryTag: "경제경영",
+                description: ""
+            },
+            {
+                id: 10,
+                title: "역사는 어떻게 진보하고 왜 퇴보하는가",
+                subtitle: "",
+                author: "파리드 자카리아",
+                coverImage: "https://via.placeholder.com/200x300/EC4899/FFFFFF?text=Book10",
+                group: "group1",
+                categoryTag: "세계사",
+                description: ""
+            },
+            // Group 2: 성장하는 일의 방식 (3권)
+            {
+                id: 1,
+                title: "베조스 레터",
+                subtitle: "",
+                author: "스티브 앤더슨",
+                coverImage: "https://via.placeholder.com/200x300/4F46E5/FFFFFF?text=Book1",
+                group: "group2",
+                categoryTag: "경제경영",
+                description: ""
+            },
+            {
+                id: 4,
+                title: "브랜드로 남는다는 것",
+                subtitle: "",
+                author: "홍성태",
+                coverImage: "https://via.placeholder.com/200x300/10B981/FFFFFF?text=Book4",
+                group: "group2",
+                categoryTag: "경제경영",
+                description: ""
+            },
+            {
+                id: 8,
+                title: "기획의 정석",
+                subtitle: "",
+                author: "박신영",
+                coverImage: "https://via.placeholder.com/200x300/06B6D4/FFFFFF?text=Book8",
+                group: "group2",
+                categoryTag: "자기계발",
+                description: ""
+            },
+            // Group 3: 사람을 이해하고 연결하는 법 (2권)
+            {
+                id: 9,
+                title: "사람을 안다는 것",
+                subtitle: "",
+                author: "데이비드 브룩스",
+                coverImage: "https://via.placeholder.com/200x300/A855F7/FFFFFF?text=Book9",
+                group: "group3",
+                categoryTag: "인문교양",
+                description: ""
+            },
+            {
+                id: 3,
+                title: "언어의 온도",
+                subtitle: "",
+                author: "이기주",
+                coverImage: "https://via.placeholder.com/200x300/EC4899/FFFFFF?text=Book3",
+                group: "group3",
+                categoryTag: "시/에세이",
+                description: ""
+            },
+            // Group 4: 익숙함을 깨우는 관점 전환 (2권)
+            {
+                id: 6,
+                title: "편안함의 습격",
+                subtitle: "",
+                author: "마이클 이스터",
+                coverImage: "https://via.placeholder.com/200x300/8B5CF6/FFFFFF?text=Book6",
+                group: "group4",
+                categoryTag: "인문교양",
+                description: ""
+            },
+            {
+                id: 7,
+                title: "서사의 위기",
+                subtitle: "",
+                author: "한병철",
+                coverImage: "https://via.placeholder.com/200x300/EF4444/FFFFFF?text=Book7",
+                group: "group4",
+                categoryTag: "인문교양",
+                description: ""
+            }
+        ];
+        // ============================================================
+
+        let currentBook = null;
+
+        // 책 표지 로드 실패 시 placeholder 표시
+        function handleImageError(img, bookTitle) {
+            img.style.display = 'none';
+            const container = img.parentElement;
+            const placeholder = document.createElement('div');
+            placeholder.className = 'book-placeholder';
+            placeholder.innerHTML = `
+                <svg class="book-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 5h16M6.5 7h7M6.5 11h7M6.5 15h4"/>
+                </svg>
+                <span class="text-sm font-medium">COEX 추천도서</span>
+            `;
+            container.appendChild(placeholder);
+        }
+
+        // 책 그리드 렌더링 (통합 레이아웃)
+        function renderBooks() {
+            const container = document.getElementById('bookContainer');
+            let html = '';
+
+            // Group 정의
+            const groups = [
+                {
+                    title: "시대를 읽는 비즈니스 인사이트",
+                    description: "경영, 경제, 역사 흐름을 통해 지금의 변화와 앞으로의 방향을 읽는 책",
+                    bookIndices: [0, 1, 2]
+                },
+                {
+                    title: "성장하는 일의 방식",
+                    description: "성장하는 기업, 오래 남는 브랜드, 설득력 있는 기획의 공통점을 다루는 책",
+                    bookIndices: [3, 4, 5]
+                },
+                {
+                    title: "사람을 이해하고 연결하는 법",
+                    description: "관계, 공감, 말의 태도를 통해 더 나은 협업과 소통을 생각하는 책",
+                    bookIndices: [6, 7]
+                },
+                {
+                    title: "익숙함을 깨우는 관점 전환",
+                    description: "편안함과 빠른 정보 소비에 익숙해진 지금의 삶과 사고방식을 다시 돌아보게 하는 책",
+                    bookIndices: [8, 9]
+                }
+            ];
+
+            // 각 Group 렌더링
+            groups.forEach((groupIndex, index) => {
+                const group = groups[index];
+
+                // 그룹 간 구분선 (첫 번째 그룹 제외)
+                if (index > 0) {
+                    html += `<div style="width: 100%; border-bottom: 1px solid #d1d5db; margin: 48px 0 48px 0;"></div>`;
+                }
+
+                // 그룹 제목 및 설명 (전체 너비)
+                html += `
+                    <div style="width: 100%; text-align: center; margin-bottom: 32px; padding: 0 20px;">
+                        <h3 class="text-sm font-bold text-gray-900 mb-2">${group.title}</h3>
+                        <p class="text-xs text-gray-600">${group.description}</p>
+                    </div>
+                `;
+
+                // 그룹 내 책들
+                group.bookIndices.forEach((idx) => {
+                    const book = books[idx];
+                    html += `
+                        <div class="flex flex-col items-center" style="width: 250px;">
+                            <div class="book-card cursor-pointer rounded-lg overflow-hidden relative" onclick="openModal(${book.id})" style="width: 250px;">
+                                <div style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 10;">
+                                    <span class="category-tag">${book.categoryTag}</span>
+                                </div>
+                                <div class="relative overflow-hidden bg-gray-200" style="aspect-ratio: 2/3; width: 250px;">
+                                    <img
+                                        src="${book.coverImage}"
+                                        alt="${book.title}"
+                                        class="book-cover"
+                                        onerror="handleImageError(this, '${book.title}')"
+                                    >
+                                </div>
+                            </div>
+                            <div style="width: 250px; min-height: 52px; margin-top: 16px; display: flex; align-items: center; justify-content: center;">
+                                <h3 class="font-bold text-gray-900 text-center" style="font-size: 24px !important; line-height: 1.5; word-break: keep-all;">${book.title}</h3>
+                            </div>
+                            <p class="text-gray-500 font-normal text-center" style="width: 250px; margin-top: 8px; font-size: 16px !important; line-height: 1.4 !important;">${book.author}</p>
+                        </div>
+                    `;
+                });
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 모달 열기
+        function openModal(bookId) {
+            const book = books.find(b => b.id === bookId);
+            if (!book) return;
+
+            currentBook = book;
+            document.getElementById('modalCover').src = book.coverImage;
+            document.getElementById('modalTitle').textContent = book.title;
+            document.getElementById('modalSubtitle').textContent = book.subtitle;
+            document.getElementById('modalAuthor').textContent = book.author;
+            document.getElementById('modalDescription').textContent = book.description;
+            document.getElementById('modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // 초기 렌더링
+        renderBooks();
+    </script>
+</body>
+</html>
