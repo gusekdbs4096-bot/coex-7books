@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(run)",
+      "Bash(start index_v2.html)",
+      "Bash(powershell -Command \"Start-Process 'index_v2.html'\")"
+    ]
+  }
+}
