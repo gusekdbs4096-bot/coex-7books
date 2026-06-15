@@ -59,6 +59,7 @@
             height: 100%;
             object-fit: cover;
             background: #f3f4f6;
+            display: block;
         }
 
         .book-card:hover .book-cover {
@@ -505,7 +506,7 @@
                 title: "HBR 위대한 통찰",
                 subtitle: "",
                 author: "하버드비즈니스리뷰",
-                coverImage: "https://via.placeholder.com/200x300/06B6D4/FFFFFF?text=Book2",
+                coverImage: "hbr.jpg",
                 group: "group1",
                 categoryTag: "경제경영",
                 description: ""
@@ -515,7 +516,7 @@
                 title: "세계 경제 지각 변동",
                 subtitle: "",
                 author: "박종훈",
-                coverImage: "https://via.placeholder.com/200x300/F59E0B/FFFFFF?text=Book5",
+                coverImage: "세계경제지각변동.jpg",
                 group: "group1",
                 categoryTag: "경제경영",
                 description: ""
@@ -525,7 +526,7 @@
                 title: "역사는 어떻게 진보하고 왜 퇴보하는가",
                 subtitle: "",
                 author: "파리드 자카리아",
-                coverImage: "https://via.placeholder.com/200x300/EC4899/FFFFFF?text=Book10",
+                coverImage: "역사는어떻게진보하고왜퇴보하는가.jpg",
                 group: "group1",
                 categoryTag: "세계사",
                 description: ""
@@ -536,7 +537,7 @@
                 title: "베조스 레터",
                 subtitle: "",
                 author: "스티브 앤더슨",
-                coverImage: "https://via.placeholder.com/200x300/4F46E5/FFFFFF?text=Book1",
+                coverImage: "베조스레터.jpg",
                 group: "group2",
                 categoryTag: "경제경영",
                 description: ""
@@ -546,7 +547,7 @@
                 title: "브랜드로 남는다는 것",
                 subtitle: "",
                 author: "홍성태",
-                coverImage: "https://via.placeholder.com/200x300/10B981/FFFFFF?text=Book4",
+                coverImage: "브랜드로남는다는것.jpg",
                 group: "group2",
                 categoryTag: "경제경영",
                 description: ""
@@ -556,7 +557,7 @@
                 title: "기획의 정석",
                 subtitle: "",
                 author: "박신영",
-                coverImage: "https://via.placeholder.com/200x300/06B6D4/FFFFFF?text=Book8",
+                coverImage: "기획의정석.jpg",
                 group: "group2",
                 categoryTag: "자기계발",
                 description: ""
@@ -567,7 +568,7 @@
                 title: "사람을 안다는 것",
                 subtitle: "",
                 author: "데이비드 브룩스",
-                coverImage: "https://via.placeholder.com/200x300/A855F7/FFFFFF?text=Book9",
+                coverImage: "사람을안다는것.jpg",
                 group: "group3",
                 categoryTag: "인문교양",
                 description: ""
@@ -577,7 +578,7 @@
                 title: "언어의 온도",
                 subtitle: "",
                 author: "이기주",
-                coverImage: "https://via.placeholder.com/200x300/EC4899/FFFFFF?text=Book3",
+                coverImage: "언어의온도.png",
                 group: "group3",
                 categoryTag: "시/에세이",
                 description: ""
@@ -588,7 +589,7 @@
                 title: "편안함의 습격",
                 subtitle: "",
                 author: "마이클 이스터",
-                coverImage: "https://via.placeholder.com/200x300/8B5CF6/FFFFFF?text=Book6",
+                coverImage: "편안함의습격.jpg",
                 group: "group4",
                 categoryTag: "인문교양",
                 description: ""
@@ -598,7 +599,7 @@
                 title: "서사의 위기",
                 subtitle: "",
                 author: "한병철",
-                coverImage: "https://via.placeholder.com/200x300/EF4444/FFFFFF?text=Book7",
+                coverImage: "서사의위기.jpg",
                 group: "group4",
                 categoryTag: "인문교양",
                 description: ""
@@ -673,12 +674,12 @@
                 group.bookIndices.forEach((idx) => {
                     const book = books[idx];
                     html += `
-                        <div class="flex flex-col items-center" style="width: 250px;">
-                            <div class="book-card cursor-pointer rounded-lg overflow-hidden relative" onclick="openModal(${book.id})" style="width: 250px;">
-                                <div style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 10;">
+                        <div class="flex flex-col items-center" style="width: 250px; height: 100%;">
+                            <div class="book-card cursor-pointer rounded-lg overflow-hidden relative" onclick="openModal(${book.id})" style="width: 250px; min-height: 375px; display: flex; flex-direction: column;">
+                                <div style="position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 10;">
                                     <span class="category-tag">${book.categoryTag}</span>
                                 </div>
-                                <div class="relative overflow-hidden bg-gray-200" style="aspect-ratio: 2/3; width: 250px;">
+                                <div class="relative overflow-hidden bg-gray-200" style="aspect-ratio: 2/3; width: 250px; flex-shrink: 0;">
                                     <img
                                         src="${book.coverImage}"
                                         alt="${book.title}"
@@ -687,7 +688,7 @@
                                     >
                                 </div>
                             </div>
-                            <div style="width: 250px; min-height: 52px; margin-top: 16px; display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 250px; min-height: 56px; margin-top: 16px; display: flex; align-items: center; justify-content: center;">
                                 <h3 class="font-bold text-gray-900 text-center" style="font-size: 24px !important; line-height: 1.5; word-break: keep-all;">${book.title}</h3>
                             </div>
                             <p class="text-gray-500 font-normal text-center" style="width: 250px; margin-top: 8px; font-size: 16px !important; line-height: 1.4 !important;">${book.author}</p>
